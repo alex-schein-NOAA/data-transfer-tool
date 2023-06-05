@@ -3,7 +3,6 @@ import xarray as xr
 
 #Receive variable from somewhere else
 cache_path="./model_output"
-
 error_message = "Model file missing from cache. Please download model file"
 
 def make_model_file_name(initialization_hour, forecast_hour):
