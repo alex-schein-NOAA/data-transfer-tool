@@ -1,7 +1,9 @@
 import os
+import xarray as xr 
 
 class cache:
     def __init__(self, cache_name):
+        self.cache_name = cache_name
         self.evaluate_cache(cache_name)
         return 
     
@@ -27,6 +29,7 @@ class cache:
                            '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21',
                            '22', '23']
         
+        #TODO: Figure out how to programatically create path
         try :
             #Creates parent folder
             os.mkdir(f'{os.getcwd()}/RRFS/{cache_name}')
@@ -41,3 +44,18 @@ class cache:
             raise Exception(f"Failed to create cache")
         
         return 
+    
+    def get_path(self,date_time_str, init_hour_str, file_name):
+        return f"{os.getcwd()}/RRFS/{self.cache_name}/{date_time_str}/{init_hour_str}"
+
+    def check_cache(self,date_time_str, init_hour_str, file_name):
+        #TODO: Figure out how to programatically create path
+        if file_name in os.listdir(self.get_path(date_time_str, init_hour_str, file_name)):
+            return True 
+        else :
+            return False
+    
+    def fetch(self, date_time_str, init_hour_str, file_name):
+        #TODO: Figure out how to programatically create path
+        return xr.open_dataset(f"{os.getcwd()}/RRFS/{self.cache_name}/{date_time_str}/{init_hour_str}/{file_name}", engine="pynio")
+
