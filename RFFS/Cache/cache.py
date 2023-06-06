@@ -1,6 +1,6 @@
 import os
 
-class Cache:
+class cache:
     def __init__(self, cache_name):
         self.evaluate_cache(cache_name)
         return 
@@ -8,7 +8,7 @@ class Cache:
     #Evaluates if cache exists. Otherwise it creates it
     #In the future, can send memory usage information object
     def evaluate_cache(self, cache_name):
-        if os.path.exists(cache_name):
+        if os.path.exists(f"./{cache_name}"):
             return 
         else :
             return 

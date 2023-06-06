@@ -1,7 +1,7 @@
 import os
 import xarray as xr
-from s3 import S3
-from cache import Cache
+from .S3 import s3
+from .Cache import cache
 
 #Receive variable from somewhere else
 cache_name="cache"
@@ -11,8 +11,8 @@ bucket = "noaa-rrfs-pds"
 class rrfs:
 
     def __init__(self):
-        cache = Cache(cache_name)
-        s3 = S3(bucket)
+        cache = cache(cache_name)
+        s3_connection = s3(bucket)
         
 
     def make_model_file_name(self,initialization_hour, forecast_hour):

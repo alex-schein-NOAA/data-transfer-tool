@@ -1,5 +1,6 @@
 import boto3
-class S3Connector:
+
+class s3:
     def __init__(self, bucket_name):
         self.bucket_name = bucket_name
         self.s3 = boto3.client('s3',region_name='us-east-1')
