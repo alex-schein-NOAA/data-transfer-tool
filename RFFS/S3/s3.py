@@ -10,8 +10,9 @@ class s3:
         try :
 
             object_name = self.create_object_name(date_time_string, init_hour_string, file_name)
-            with open(file_name, 'wb') as f:
-                self.s3.download_fileobj(self.bucket_name, object_name,f)
+            #TODO: Check if this is the best way of 
+            # with open(file_name, 'wb') as f:
+            return self.s3.download_fileobj(self.bucket_name, object_name, file_name)
                
         except :
             raise Exception(f"File download Error: Failed to download file {object_name} from bucket {self.bucket_name}")

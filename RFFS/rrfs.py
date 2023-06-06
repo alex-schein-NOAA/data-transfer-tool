@@ -11,8 +11,8 @@ bucket = "noaa-rrfs-pds"
 class rrfs:
 
     def __init__(self):
-        cache = cache(cache_name)
-        s3_connection = s3(bucket)
+        self.cache = cache.cache(cache_name)
+        self.s3_connection = s3.s3(bucket)
         
 
     def make_model_file_name(self,initialization_hour, forecast_hour):
@@ -27,7 +27,6 @@ class rrfs:
         # xr : xarray dataset 
     def fetch_file(self,date_time, initialization_hour, forecast_hour):
 
-
         init_hour_str = str(initialization_hour)
         f_hour_str = str(forecast_hour)
         #TODO: Figure out how to convert this to string
@@ -39,8 +38,12 @@ class rrfs:
             #If file has been downloaded, return dataset
             return xr.open_dataset(f"./{cache_name}/{date_time_str}/{init_hour_str}/{file_name}", engine='pynio')
         else :
-            #TODO: Call S3 method to download file
-            #TODO: Figure out how to download file to correct path
+            #TODO: Test this
+            file = s3.fetch_file(date_time_str, init_hour_str, file_name)
+            #TODO: Figure out what s3 returns
+            #TODO: Put data in grib file in the correct path
+
+
             raise Exception(error_message)
 
 
