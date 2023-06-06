@@ -9,7 +9,7 @@ class cache:
     #In the future, can return memory usage information object
     def evaluate_cache(self, cache_name):
 
-        if os.path.exists(f"{os.getcwd()}/RFFS/{cache_name}"):
+        if os.path.exists(f"{os.getcwd()}/RRFS/{cache_name}"):
             #TODO: Do stuff with the cache folder
             #      Analytics maybe on memory usage maybe?
             return 
@@ -29,13 +29,13 @@ class cache:
         
         try :
             #Creates parent folder
-            os.mkdir(f'{os.getcwd()}/RFFS/{cache_name}')
+            os.mkdir(f'{os.getcwd()}/RRFS/{cache_name}')
             #Creates folder for every date in the date_array
             for date in dates_array:
-                os.mkdir(f'{os.getcwd()}/RFFS/{cache_name}/{date}')
+                os.mkdir(f'{os.getcwd()}/RRFS/{cache_name}/{date}')
                 #Creates folder for every initialization hour in each date folder
                 for init_hour in init_hour_array:
-                    os.mkdir(f'{os.getcwd()}/RFFS/{cache_name}/{date}/{init_hour}')
+                    os.mkdir(f'{os.getcwd()}/RRFS/{cache_name}/{date}/{init_hour}')
             print('cache created')
         except :
             raise Exception(f"Failed to create cache")
