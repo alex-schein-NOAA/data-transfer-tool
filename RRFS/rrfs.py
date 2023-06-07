@@ -16,14 +16,12 @@ class rrfs:
         self.s3_connection = s3.s3(bucket)
 
         
-    #Input: date_time : DateTime object, initialization_hour : int, forecast_hour : int 
+    #Input: date_time : pd Timestamp object, initialization_hour : int, forecast_hour : int 
     #Output: xr : xarray dataset 
-    def fetch_model_forecast(self,date_time, initialization_hour, forecast_hour):
+    def fetch_model_forecast(self,date_time_str, initialization_hour, forecast_hour):
 
         init_hour_str = str(initialization_hour)
         f_hour_str = str(forecast_hour)
-        #TODO: Figure out how to convert this to string
-        date_time_str = date_time
 
         file_name = self.make_model_file_name(initialization_hour,forecast_hour)
 

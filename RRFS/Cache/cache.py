@@ -25,7 +25,6 @@ class cache:
     #Creates cache filesystem structure
     def create_cache(self, cache_name):
         print("Creating model forecast store")
-        #TODO: Generate all the dates
         dates_array = self.dates()
         #TODO: Put in an import 
         init_hour_array = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
@@ -50,13 +49,19 @@ class cache:
     def get_path(self,date_time_str, init_hour_str, file_name):
         return f"{os.getcwd()}/RRFS/{self.cache_name}/{date_time_str}/{init_hour_str}"
 
+    #Helper function:
+    #Checks if given forecast is in cache
     def check_cache(self,date_time_str, init_hour_str, file_name):
         #TODO: Figure out how to programatically create path
-        if file_name in os.listdir(self.get_path(date_time_str, init_hour_str, file_name)):
+
+        #Checks file is in cache
+        file_path = self.get_path(date_time_str, init_hour_str, file_name)
+        if file_name in os.listdir(file_path):
             return True 
         else :
             return False
     
+    #Fetches given forecast from the cache
     def fetch(self, date_time_str, init_hour_str, file_name):
         #TODO: Figure out how to programatically create path
         return xr.open_dataset(f"{os.getcwd()}/RRFS/{self.cache_name}/{date_time_str}/{init_hour_str}/{file_name}", engine="pynio")

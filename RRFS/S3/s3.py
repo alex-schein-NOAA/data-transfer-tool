@@ -12,9 +12,6 @@ class s3:
         try :
 
             object_name = self.create_object_name(date_time_string, init_hour_string, file_name)
-
-            #BUG: File object must implement write
-            print("attempting to download file")
             with open(f"{download_path}/{file_name}", 'wb') as f:
                 print("Downloading File")
                 self.s3.download_fileobj(self.bucket_name, object_name, f)
