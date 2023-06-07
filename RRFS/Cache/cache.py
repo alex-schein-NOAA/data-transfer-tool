@@ -1,5 +1,7 @@
 import os
 import xarray as xr 
+from datetime import datetime
+import pandas as pd
 
 class cache:
     def __init__(self, cache_name):
@@ -13,7 +15,7 @@ class cache:
 
         if os.path.exists(f"{os.getcwd()}/RRFS/{cache_name}"):
             #TODO: Do stuff with the cache folder
-            #      Analytics maybe on memory usage maybe?
+            #      Analytics on memory usage maybe?
             return 
         else :
             #Creates cache
@@ -22,8 +24,9 @@ class cache:
 
     #Creates cache filesystem structure
     def create_cache(self, cache_name):
+        print("Creating model forecast store")
         #TODO: Generate all the dates
-        dates_array = ['2023-05-24', '2023-05-23', '2023-05-25']
+        dates_array = self.dates()
         #TODO: Put in an import 
         init_hour_array = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
                            '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21',
@@ -39,9 +42,8 @@ class cache:
                 #Creates folder for every initialization hour in each date folder
                 for init_hour in init_hour_array:
                     os.mkdir(f'{os.getcwd()}/RRFS/{cache_name}/{date}/{init_hour}')
-            print('cache created')
         except :
-            raise Exception(f"Failed to create cache")
+            raise Exception(f"Failed to create model forecast store")
         
         return 
     
@@ -59,3 +61,8 @@ class cache:
         #TODO: Figure out how to programatically create path
         return xr.open_dataset(f"{os.getcwd()}/RRFS/{self.cache_name}/{date_time_str}/{init_hour_str}/{file_name}", engine="pynio")
 
+    #Helper function
+    #Generates all the dates in specified range
+    def dates(self, date_start=datetime(2023,5,1), days=30):
+        date_list = pd.date_range(date_start, periods=days).to_list()
+        return [d.strftime("%Y-%m-%d") for d in date_list]
