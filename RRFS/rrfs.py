@@ -18,21 +18,22 @@ class rrfs:
         
     #Input: date_time : pd Timestamp object, initialization_hour : int, forecast_hour : int 
     #Output: xr : xarray dataset 
-    def fetch_model_forecast(self,date_time_str, initialization_hour, forecast_hour):
+    def fetch_model_forecast(self, initialization_date, forecast_hour):
 
-        init_hour_str = str(initialization_hour)
-        f_hour_str = str(forecast_hour)
+        init_hour_str = str(initialization_date.hour)
+        init_date_str = initialization_date.strftime("%Y-%m-%d")
+        # f_hour_str = str(forecast_hour)
 
-        file_name = self.make_model_file_name(initialization_hour,forecast_hour)
+        file_name = self.make_model_file_name(init_hour_str,forecast_hour)
 
 
-        if self.cache.check_cache(date_time_str, init_hour_str, file_name):
-            return self.cache.fetch(date_time_str, init_hour_str, file_name)
+        if self.cache.check_cache(init_date_str, init_hour_str, file_name):
+            return self.cache.fetch(init_date_str, init_hour_str, file_name)
         else :
 
-            download_path = self.cache.get_path(date_time_str, init_hour_str, file_name)
-            self.s3_connection.download_file(date_time_str, init_hour_str, file_name, download_path)
-            return self.cache.fetch(date_time_str, init_hour_str, file_name)
+            download_path = self.cache.get_path(init_date_str, init_hour_str, file_name)
+            self.s3_connection.download_file(init_date_str, init_hour_str, file_name, download_path)
+            return self.cache.fetch(init_date_str, init_hour_str, file_name)
 
     
     def make_model_file_name(self,initialization_hour, forecast_hour, output_type="nat"):
