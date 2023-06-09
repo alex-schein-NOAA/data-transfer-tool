@@ -18,7 +18,7 @@ class rrfs:
         
     #Input: date_time : pd Timestamp object, initialization_hour : int, forecast_hour : int 
     #Output: xr : xarray dataset 
-    def fetch_model_forecast(self, initialization_date, forecast_hour):
+    def fetch_model_output(self, initialization_date, forecast_hour):
 
         init_hour_str = str(initialization_date.hour)
         init_date_str = initialization_date.strftime("%Y-%m-%d")
