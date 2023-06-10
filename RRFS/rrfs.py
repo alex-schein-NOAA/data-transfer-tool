@@ -18,11 +18,10 @@ class rrfs:
         
     #Input: date_time : pd Timestamp object, initialization_hour : int, forecast_hour : int 
     #Output: xr : xarray dataset 
-    def fetch_model_forecast(self, initialization_date, forecast_hour):
+    def fetch_model_output(self, initialization_date, forecast_hour):
 
         init_hour_str = str(initialization_date.hour)
         init_date_str = initialization_date.strftime("%Y-%m-%d")
-        # f_hour_str = str(forecast_hour)
 
         file_name = self.make_model_file_name(init_hour_str,forecast_hour)
 
@@ -37,5 +36,6 @@ class rrfs:
 
     
     def make_model_file_name(self,initialization_hour, forecast_hour, output_type="nat"):
-        file_name = f'rrfs.t{initialization_hour}z.{output_type}lev.f00{forecast_hour}.conus_3km.grib2'
+        f_hour = str(forecast_hour) if forecast_hour >= 10 else f'0{forecast_hour}'
+        file_name = f'rrfs.t{initialization_hour}z.{output_type}lev.f0{f_hour}.conus_3km.grib2'
         return file_name
