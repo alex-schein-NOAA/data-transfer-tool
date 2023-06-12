@@ -1,10 +1,8 @@
 import os
 import pandas as pd
 import xarray as xr
-# from cache import *
-# import s3
-from S3 import s3
-from Cache import cache
+from .S3 import s3
+from .Cache import cache
 
 #Receive variable from somewhere else
 cache_name="store"
@@ -55,3 +53,6 @@ class Rrfs:
         file_name = f'rrfs.t{initialization_hour}z.{output_type}lev.f0{f_hour}.conus_3km.grib2'
         return file_name
     
+r = Rrfs()
+data = r.fetch_model_output(pd.Timestamp('2023-06-01 23:00:00'), 5)
+print(data)
