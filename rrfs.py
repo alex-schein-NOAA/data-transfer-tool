@@ -1,5 +1,3 @@
-import os
-import pandas as pd
 import xarray as xr
 from .S3 import s3
 from .Cache import cache
@@ -37,9 +35,11 @@ class Rrfs:
             download_path = self.cache.get_download_path()
             #Cache file name
             cfile_name = self.cache.get_cfile_name(init_date_str, init_hour_str,file_name)
-            
+            #S3 bucket file name
+            object_name = self.make_s3_object_name(init_date_str, init_hour_str, file_name)
+            print(object_name)
             #Downloads file from bucket and writes it to the download path with c_file_name as filename
-            self.s3_connection.download_file(init_date_str, init_hour_str, file_name, download_path, cfile_name)
+            self.s3_connection.download_file(object_name, download_path, cfile_name)
             
             #Returns cached data as xarray dataset
             return self.cache.fetch(init_date_str, init_hour_str, file_name)
@@ -52,4 +52,10 @@ class Rrfs:
         f_hour = str(forecast_hour) if forecast_hour >= 10 else f'0{forecast_hour}'
         file_name = f'rrfs.t{initialization_hour}z.{output_type}lev.f0{f_hour}.conus_3km.grib2'
         return file_name
+    
+    #Creates object name for file in bucket
+    def make_s3_object_name(self, date_time_str, init_hour_str, file_name):
+        date_time = date_time_str.split("-")
+        date_time = ''.join(map(str, date_time))
+        return f"rrfs_a/rrfs_a.{date_time}/{init_hour_str}/control/{file_name}"
     
