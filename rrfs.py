@@ -1,6 +1,6 @@
 import xarray as xr
-from .S3 import s3
-from .Cache import cache
+from S3 import s3
+from Cache import cache
 
 #Receive variable from somewhere else
 cache_name="store"
@@ -53,7 +53,7 @@ class Rrfs:
         return file_name
     
     #Creates object name for file in bucket
-    def make_s3_object_name(self, date_time_str, init_hour_str, file_name):
+    def make_s3_object_name(self, file_name, date_time_str, init_hour_str):
         date_time = date_time_str.split("-")
         date_time = ''.join(map(str, date_time))
         return f"rrfs_a/rrfs_a.{date_time}/{init_hour_str}/control/{file_name}"
