@@ -32,11 +32,11 @@ class cache:
         
         return 
        
-     #Checks if given forecast is in cache
-    def check_cache(self,init_date_time_str, init_hour_str ,file_name):
+    #Checks if given forecast is in cache
+    def check_cache(self,file_name, init_date_time_str, init_hour_str=False):
 
         #Checks file is in cache
-        file = self.get_cfile_name(init_date_time_str, init_hour_str,file_name)
+        file = self.get_cfile_name(file_name,init_date_time_str, init_hour_str)
         download_path = self.get_download_path()
         if file in os.listdir(download_path):
             return True 
@@ -44,16 +44,19 @@ class cache:
             return False
         
     #Fetches given forecast from the cache
-    def fetch(self, date_time_str,init_hour_str,file_name):
-        file = self.get_cfile_name(date_time_str, init_hour_str,file_name)
+    def fetch(self, file_name, date_time_str,init_hour_str=False):
+        file = self.get_cfile_name(file_name, date_time_str, init_hour_str)
         download_path = self.get_download_path()
         return xr.open_dataset(f"{download_path}/{file}", engine="pynio")
 
         
     #Helper function:
     #Generates cache_file name 
-    def get_cfile_name(self,init_date_time_str, init_hour_str,file_name):
-        return f"{init_date_time_str}-{init_hour_str}-{file_name}"
+    def get_cfile_name(self,file_name, init_date_time_str, init_hour_str=False):
+        if init_hour_str:
+            return f"{init_date_time_str}-{init_hour_str}-{file_name}"
+        else :
+            return f"{init_date_time_str}-{file_name}"
 
     
     #Eventually will be useful if cache folder location is moved
