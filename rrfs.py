@@ -24,9 +24,9 @@ class Rrfs:
         file_name = self.make_model_file_name(init_hour_str,forecast_hour)
 
         #Checks cache for file
-        if self.cache.check_cache(init_date_str, init_hour_str,file_name):
+        if self.cache.check_cache(file_name, init_date_str, init_hour_str):
             #Returns file if in cache
-            return self.cache.fetch(init_date_str, init_hour_str, file_name)
+            return self.cache.fetch(file_name, init_date_str, init_hour_str)
         
         #Otherwise downloads file from bucket and writes to cache
         else :
@@ -34,15 +34,14 @@ class Rrfs:
             #Path and file name for the cache level
             download_path = self.cache.get_download_path()
             #Cache file name
-            cfile_name = self.cache.get_cfile_name(init_date_str, init_hour_str,file_name)
+            cfile_name = self.cache.get_cfile_name(file_name, init_date_str, init_hour_str)
             #S3 bucket file name
-            object_name = self.make_s3_object_name(init_date_str, init_hour_str, file_name)
-            print(object_name)
+            object_name = self.make_s3_object_name(file_name, init_date_str, init_hour_str)
             #Downloads file from bucket and writes it to the download path with c_file_name as filename
             self.s3_connection.download_file(object_name, download_path, cfile_name)
             
             #Returns cached data as xarray dataset
-            return self.cache.fetch(init_date_str, init_hour_str, file_name)
+            return self.cache.fetch(file_name, init_date_str, init_hour_str)
 
     
     #Helper functions:
