@@ -13,7 +13,37 @@ class Rrfs:
         self.cache = cache.cache(cache_name)
         self.s3_connection = s3.s3(bucket)
 
+    #Input: 
+    # date_time : pd Timestamp object, 
+    # initialization_date : int, 
+    # forecast_hours : [int] | int 
+
+    #Output: 
+    # xr : xarray dataset 
+    def fetch_model_forecasts(self, initialization_date, forecast_hours):
         
+        #Stores forecast dataframes in a list
+        forecasts = []
+
+        #If the only one forecast hour was requested
+        if type(forecast_hours) == int:
+            forecast_hour = forecast_hours
+            return self.fetch_model_forecast(initialization_date, forecast_hour)
+
+        #If the forecasts hours are a list
+        elif type(forecast_hours) == list:
+            #Opens each forecast and appends to list
+            for hour in forecast_hours:
+                forecasts.append(self.fetch_model_forecast(initialization_date, hour))
+            
+            #Makes the list into a data frame with a time dimension
+            xr = self.make_data_frame(forecasts)
+            return xr 
+
+        else :
+            raise Exception(f'{type(forecast_hours)} as forecast hours is not supported')
+        
+
     #Input: date_time : pd Timestamp object, initialization_date:  forecast_hour : int 
     #Output: xr : xarray dataset 
     def fetch_model_output(self, initialization_date, forecast_hour):
@@ -60,4 +90,8 @@ class Rrfs:
         date_time = date_time_str.split("-")
         date_time = ''.join(map(str, date_time))
         return f"rrfs_a/rrfs_a.{date_time}/{init_hour_str}/control/{file_name}"
+
+    def make_dataframe(self,forecasts):
+        df = xr.concat(forecasts)
+        return df 
     
