@@ -5,7 +5,7 @@ from Cache import cache
 
 cache_name = "store"
 bucket = "noaa-mrms-pds"
-
+zipped = True
 
 class Mrms:
 
@@ -18,14 +18,14 @@ class Mrms:
         # init_hour_str = date_time.strftime("%H")      #S3 init hour
         date_time_str = date_time.strftime("%Y%m%d")  #S3 init_date 
         file_name = self.make_model_file_name(date_time_str=date_time_str,date_time=date_time)
-        coso = file_name.split('.')
-        file_name = f'{coso[0]}.{coso[1]}.{coso[2]}'
-        print(file_name)
+        # coso = file_name.split('.')
+        # file_name = f'{coso[0]}.{coso[1]}.{coso[2]}'
+        # print(file_name)
 
         #Checks cache for file
         if self.cache.check_cache(file_name, date_time_str,):
             #Returns file if in cache
-            return self.cache.fetch( file_name, date_time_str)
+            return self.cache.fetch( file_name, date_time_str, zipped=zipped)
         
         #Otherwise downloads file from bucket and writes to cache
         else :
@@ -39,8 +39,9 @@ class Mrms:
             #Downloads file from bucket and writes it to the download path with c_file_name as filename
             self.s3_connection.download_file(object_name, download_path, cfile_name)
             
+            
             #Returns cached data as xarray dataset
-            return self.cache.fetch(file_name, date_time_str)
+            return self.cache.fetch(file_name, date_time_str, zipped=zipped)
 
     
         

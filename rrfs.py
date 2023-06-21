@@ -31,17 +31,20 @@ class Rrfs:
         #Otherwise downloads file from bucket and writes to cache
         else :
             
-            #Path and file name for the cache level
+            # Path and file name for the cache level
             download_path = self.cache.get_download_path()
-            #Cache file name
+            # Cache file name
             cfile_name = self.cache.get_cfile_name(file_name, init_date_str, init_hour_str)
-            #S3 bucket file name
-            object_name = self.make_s3_object_name(file_name, init_date_str, init_hour_str)
-            #Downloads file from bucket and writes it to the download path with c_file_name as filename
-            self.s3_connection.download_file(object_name, download_path, cfile_name)
-            
-            #Returns cached data as xarray dataset
-            return self.cache.fetch(file_name, init_date_str, init_hour_str)
+            # S3 bucket file name
+            try :
+                object_name = self.make_s3_object_name(file_name, init_date_str, init_hour_str)
+                #Downloads file from bucket and writes it to the download path with c_file_name as filename
+                self.s3_connection.download_file(object_name, download_path, cfile_name)
+                # self.cache.put(file_name, file_content, init_date_str, init_hour_str)
+                #Returns cached data as xarray dataset
+                return self.cache.fetch(file_name, init_date_str, init_hour_str)
+            except: 
+                return  
 
     
     #Helper functions:
