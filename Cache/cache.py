@@ -2,6 +2,8 @@ import os
 import xarray as xr 
 from datetime import datetime
 import pandas as pd
+import tempfile 
+import gzip 
 
 class cache:
     def __init__(self, cache_name):
@@ -32,11 +34,11 @@ class cache:
         
         return 
        
-     #Checks if given forecast is in cache
-    def check_cache(self,init_date_time_str, init_hour_str ,file_name):
+    #Checks if given forecast is in cache
+    def check_cache(self,file_name, init_date_time_str, init_hour_str=False):
 
         #Checks file is in cache
-        file = self.get_cfile_name(init_date_time_str, init_hour_str,file_name)
+        file = self.get_cfile_name(file_name,init_date_time_str, init_hour_str)
         download_path = self.get_download_path()
         if file in os.listdir(download_path):
             return True 
@@ -44,16 +46,28 @@ class cache:
             return False
         
     #Fetches given forecast from the cache
-    def fetch(self, date_time_str,init_hour_str,file_name):
-        file = self.get_cfile_name(date_time_str, init_hour_str,file_name)
+    def fetch(self, file_name, init_date_time_str,init_hour_str=False, zipped=False):
+        file = self.get_cfile_name(file_name, init_date_time_str, init_hour_str)
         download_path = self.get_download_path()
-        return xr.open_dataset(f"{download_path}/{file}", engine="pynio")
 
-        
+        #TODO: Debug the unzipping
+        # Unzipped file cannot be loaded by xarray
+        if zipped:
+            with open(f'{download_path}/{file}', 'rb') as cf:
+                compressed_file = cf.read()
+                with tempfile.NamedTemporaryFile(suffix=".grib2") as f:
+                    f.write(gzip.decompress(compressed_file))
+                    return xr.open_dataset(f.name, engine='pynio')
+        else :
+            return xr.open_dataset(f"{download_path}/{file}", engine="pynio")
+
     #Helper function:
     #Generates cache_file name 
-    def get_cfile_name(self,init_date_time_str, init_hour_str,file_name):
-        return f"{init_date_time_str}-{init_hour_str}-{file_name}"
+    def get_cfile_name(self,file_name, init_date_time_str, init_hour_str=False):
+        if init_hour_str:
+            return f"{init_date_time_str}-{init_hour_str}-{file_name}"
+        else :
+            return f"{init_date_time_str}-{file_name}"
 
     
     #Eventually will be useful if cache folder location is moved
