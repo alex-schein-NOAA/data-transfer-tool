@@ -1,6 +1,7 @@
 import xarray as xr
 from S3 import s3
 from Cache import cache
+from shapely import Point
 
 #Receive variable from somewhere else
 cache_name="store"
@@ -20,7 +21,7 @@ class Rrfs:
 
     #Output: 
     # xr : xarray dataset 
-    def fetch_model_outputs(self, initialization_date, forecast_hours):
+    def fetch_model_outputs(self, initialization_date, forecast_hours, bounding_box=False):
         
         #Stores forecast dataframes in a list
         forecasts = []
@@ -28,13 +29,13 @@ class Rrfs:
         #If the only one forecast hour was requested
         if type(forecast_hours) == int:
             forecast_hour = forecast_hours
-            return self.fetch_model_output(initialization_date, forecast_hour)
+            return self.fetch_model_output(initialization_date, forecast_hour, bounding_box)
 
         #If the forecasts hours are a list
         elif type(forecast_hours) == list:
             #Opens each forecast and appends to list
             for hour in forecast_hours:
-                forecasts.append(self.fetch_model_output(initialization_date, hour))
+                forecasts.append(self.fetch_model_output(initialization_date, hour, bounding_box))
             
             #Makes the list into a data frame with a time dimension
             # xr = self.make_data_frame(forecasts)
@@ -46,7 +47,7 @@ class Rrfs:
 
     #Input: date_time : pd Timestamp object, initialization_date:  forecast_hour : int 
     #Output: xr : xarray dataset 
-    def fetch_model_output(self, initialization_date, forecast_hour):
+    def fetch_model_output(self, initialization_date, forecast_hour, bounding_box=False):
 
         init_hour_str = initialization_date.strftime("%H")      #S3 init hour
         init_date_str = initialization_date.strftime("%Y%m%d")  #S3 init_date 
@@ -56,7 +57,8 @@ class Rrfs:
         #Checks cache for file
         if self.cache.check_cache(file_name, init_date_str, init_hour_str):
             #Returns file if in cache
-            return self.cache.fetch(file_name, init_date_str, init_hour_str)
+            ds = self.cache.fetch(file_name, init_date_str, init_hour_str)
+
         
         #Otherwise downloads file from bucket and writes to cache
         else :
@@ -70,11 +72,37 @@ class Rrfs:
                 #Downloads file from bucket and writes it to the download path with c_file_name as filename
                 self.s3_connection.download_file(object_name, download_path, cfile_name)
                 #Returns cached data as xarray dataset
-                return self.cache.fetch(file_name, init_date_str, init_hour_str)
+                ds = self.cache.fetch(file_name, init_date_str, init_hour_str)
+
             except: 
                 raise Exception(f'Failed to download file {file_name} from bucket {bucket}')
 
+        if not bounding_box:
+            return ds
+
+        else :
+            return self.filter_spatially(ds, bounding_box)
+
+
+    def filter_spatially(self, ds, bounding_box):
+        lat_grid, lon_grid = ds['gridlat_0'].values, ds['gridlon_0'].values
+        # lat, lon = i_event["Lat"], i_event["Lon"]
+        lat_size = len(lat_grid) #1059
+        lon_size = len(lat_grid[0]) #1799
+        
+        lat_indexes, lon_indexes = [], []
     
+        for lat_index in range(lat_size):
+            for lon_index in range(lon_size):
+                p = Point(lon_grid[lat_index][lon_index],lat_grid[lat_index][lon_index])
+                if bounding_box.contains(p):
+                    lat_indexes.append(lat_index)
+                    lon_indexes.append(lon_index)
+            
+        min_lat_index, max_lat_index = min(lat_indexes), max(lat_indexes)
+        min_lon_index, max_lon_index = min(lon_indexes), max(lon_indexes)
+        return ds.isel(ygrid_0=range(min_lat_index,max_lat_index), xgrid_0=range(min_lon_index,max_lon_index))
+
     #Helper functions:
     #Creates the rrfs file name
     #Follows the convention of the bucket
