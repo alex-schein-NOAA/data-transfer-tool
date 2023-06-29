@@ -15,6 +15,7 @@ class Rrfs:
         self.s3_connection = s3.s3(bucket)
 
     #Fetches model outpust for given initialization time and forecast hour list
+    #Should be the only method exposed by rrfs
     #Retuns xarray list
 
     #Input: 
@@ -29,6 +30,8 @@ class Rrfs:
     # xr : [xarray dataset] 
     def fetch_model_outputs(self, initialization_date, forecast_hours, bounding_box=False, variable_list=False):
         
+        #TODO: Add input validation!!!
+
         #Stores forecast dataframes in a list
         forecasts = []
 
