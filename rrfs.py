@@ -21,7 +21,7 @@ class Rrfs:
 
     #Output: 
     # xr : xarray dataset 
-    def fetch_model_outputs(self, initialization_date, forecast_hours, bounding_box=False):
+    def fetch_model_outputs(self, initialization_date, forecast_hours, bounding_box=False, variable_list=False):
         
         #Stores forecast dataframes in a list
         forecasts = []
@@ -29,13 +29,13 @@ class Rrfs:
         #If the only one forecast hour was requested
         if type(forecast_hours) == int:
             forecast_hour = forecast_hours
-            return self.fetch_model_output(initialization_date, forecast_hour, bounding_box)
+            return self.fetch_model_output(initialization_date, forecast_hour, bounding_box, variable_list)
 
         #If the forecasts hours are a list
         elif type(forecast_hours) == list:
             #Opens each forecast and appends to list
             for hour in forecast_hours:
-                forecasts.append(self.fetch_model_output(initialization_date, hour, bounding_box))
+                forecasts.append(self.fetch_model_output(initialization_date, hour, bounding_box, variable_list))
             
             #Makes the list into a data frame with a time dimension
             # xr = self.make_data_frame(forecasts)
@@ -47,7 +47,7 @@ class Rrfs:
 
     #Input: date_time : pd Timestamp object, initialization_date:  forecast_hour : int 
     #Output: xr : xarray dataset 
-    def fetch_model_output(self, initialization_date, forecast_hour, bounding_box=False):
+    def fetch_model_output(self, initialization_date, forecast_hour, bounding_box=False, variable_list=False):
 
         init_hour_str = initialization_date.strftime("%H")      #S3 init hour
         init_date_str = initialization_date.strftime("%Y%m%d")  #S3 init_date 
@@ -77,6 +77,24 @@ class Rrfs:
             except: 
                 raise Exception(f'Failed to download file {file_name} from bucket {bucket}')
 
+        #If variable list was not specified
+        if not variable_list:
+            pass 
+        
+        #If variable list was specified
+        else :
+
+            coords = dict(
+                    gridlat_0=(["ygrid_0", "xgrid_0"], ds.coords['gridlat_0'].data),
+                    gridlon_0=(["ygrid_0", "xgrid_0"], ds.coords['gridlon_0'].data)
+                )
+            data_vars = {}
+            for weather_var in variable_list:
+                data_vars[weather_var] = (["ygrid_0", "xgrid_0"], ds[weather_var].data)
+            ds = xr.Dataset(data_vars=data_vars, coords=coords)
+            pass 
+
+        #If no bounding box was specified
         if not bounding_box:
             return ds
 
