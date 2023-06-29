@@ -14,13 +14,19 @@ class Rrfs:
         self.cache = cache.cache(cache_name)
         self.s3_connection = s3.s3(bucket)
 
+    #Fetches model outpust for given initialization time and forecast hour list
+    #Retuns xarray list
+
     #Input: 
     # date_time : pd Timestamp object, 
     # initialization_date : int, 
     # forecast_hours : [int] | int 
+    #Optional parameters 
+    # bounding box : shapely polygon object
+    # variable list : [string] 
 
     #Output: 
-    # xr : xarray dataset 
+    # xr : [xarray dataset] 
     def fetch_model_outputs(self, initialization_date, forecast_hours, bounding_box=False, variable_list=False):
         
         #Stores forecast dataframes in a list
@@ -45,8 +51,19 @@ class Rrfs:
             raise Exception(f'{type(forecast_hours)} as forecast hours is not supported')
         
 
-    #Input: date_time : pd Timestamp object, initialization_date:  forecast_hour : int 
-    #Output: xr : xarray dataset 
+    #Fetches model output for given initialization time and forecast hour
+    #Returns xarray dataset
+
+    #Input: 
+    # date_time : pd Timestamp object, 
+    # initialization_date : int, 
+    # forecast_hour : int 
+    #Optional parameters 
+    # bounding box : shapely polygon object
+    # variable list : [string] 
+
+    #Output: 
+    # xr : xarray dataset 
     def fetch_model_output(self, initialization_date, forecast_hour, bounding_box=False, variable_list=False):
 
         init_hour_str = initialization_date.strftime("%H")      #S3 init hour
@@ -81,61 +98,108 @@ class Rrfs:
         if not variable_list:
             pass 
         
-        #If variable list was specified
+        #If variable list was specified, filter variables
         else :
-
-            coords = dict(
-                    gridlat_0=(["ygrid_0", "xgrid_0"], ds.coords['gridlat_0'].data),
-                    gridlon_0=(["ygrid_0", "xgrid_0"], ds.coords['gridlon_0'].data)
-                )
-            data_vars = {}
-            for weather_var in variable_list:
-                data_vars[weather_var] = (["ygrid_0", "xgrid_0"], ds[weather_var].data)
-            ds = xr.Dataset(data_vars=data_vars, coords=coords)
+            ds = self.filter_variables(ds, variable_list)
             pass 
 
-        #If no bounding box was specified
+        #If no bounding box was specified, return dataset
         if not bounding_box:
             return ds
 
+        #If bounding box was passed, filter spatially
         else :
             return self.filter_spatially(ds, bounding_box)
 
+    ##################### Helper functions ##############################
 
+    #Filters the dataset to only contain grid points inside the bounding box
+
+    #Input:
+    # ds : xarray dataset
+    # bounding_box : shapely polygon object
+
+    #Output: 
+    # ds: xarray dataset 
     def filter_spatially(self, ds, bounding_box):
+
         lat_grid, lon_grid = ds['gridlat_0'].values, ds['gridlon_0'].values
-        # lat, lon = i_event["Lat"], i_event["Lon"]
         lat_size = len(lat_grid) #1059
         lon_size = len(lat_grid[0]) #1799
         
         lat_indexes, lon_indexes = [], []
-    
+
+        #TODO: This can be made more efficient
+        # Potentially, can be a hashmap and stored in memory when object is initialized
+
+        #Finds indexes that are contained inside bounding box
         for lat_index in range(lat_size):
             for lon_index in range(lon_size):
                 p = Point(lon_grid[lat_index][lon_index],lat_grid[lat_index][lon_index])
                 if bounding_box.contains(p):
                     lat_indexes.append(lat_index)
                     lon_indexes.append(lon_index)
-            
+        
+        #Gets min and max of lat/lon
         min_lat_index, max_lat_index = min(lat_indexes), max(lat_indexes)
         min_lon_index, max_lon_index = min(lon_indexes), max(lon_indexes)
+
+        #Returns filtered dataset
         return ds.isel(ygrid_0=range(min_lat_index,max_lat_index), xgrid_0=range(min_lon_index,max_lon_index))
 
-    #Helper functions:
-    #Creates the rrfs file name
+    #Creates the corresponding rrfs file name 
     #Follows the convention of the bucket
+
+    #Input: 
+    # initialization_date : pd timestamp object - needs year, month, day and hour
+    # forecast hour: int
+
+    #Output:
+    # file_name : string 
     def make_model_file_name(self,initialization_hour, forecast_hour, output_type="nat"):
         f_hour = str(forecast_hour) if forecast_hour >= 10 else f'0{forecast_hour}'
         file_name = f'rrfs.t{initialization_hour}z.{output_type}lev.f0{f_hour}.conus_3km.grib2'
         return file_name
     
-    #Creates object name for file in bucket
+    
+    #Creates object name (path in bucket) for rrfs file in bucket
+    #Requires the actual file name, the date_time_Str and initialization hour
+
+    #Input: 
+    # file_name : pd timestamp object - needs year, month, day and hour
+    # date_time: int
+
+    #Output:
+    # file_name : string 
     def make_s3_object_name(self, file_name, date_time_str, init_hour_str):
         date_time = date_time_str.split("-")
         date_time = ''.join(map(str, date_time))
         return f"rrfs_a/rrfs_a.{date_time}/{init_hour_str}/control/{file_name}"
 
+
+    #Creates new dataset that only has the data variables that are in the list
+    
+    #Input :
+    # ds : xarray dataset
+    # variable_list : [string]
+
+    #Output:
+    # ds : xarray dataset 
+    def filter_variables(self, ds, variable_list):
+        coords = dict(
+                    gridlat_0=(["ygrid_0", "xgrid_0"], ds.coords['gridlat_0'].data),
+                    gridlon_0=(["ygrid_0", "xgrid_0"], ds.coords['gridlon_0'].data)
+                )
+        data_vars = {}
+        for weather_var in variable_list:
+            data_vars[weather_var] = (["ygrid_0", "xgrid_0"], ds[weather_var].data)
+
+        ds = xr.Dataset(data_vars=data_vars, coords=coords)
+        return ds 
+    
+    #Prototype function
+    #The idea is to concat many model outputs along the time dimension
+    #not enough memory
     def make_dataframe(self,forecasts):
         df = xr.concat(forecasts, "time")
         return df 
-    
