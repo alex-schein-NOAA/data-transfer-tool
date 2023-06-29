@@ -116,40 +116,6 @@ class Rrfs:
 
     ##################### Helper functions ##############################
 
-    #Filters the dataset to only contain grid points inside the bounding box
-
-    #Input:
-    # ds : xarray dataset
-    # bounding_box : shapely polygon object
-
-    #Output: 
-    # ds: xarray dataset 
-    def filter_spatially(self, ds, bounding_box):
-
-        lat_grid, lon_grid = ds['gridlat_0'].values, ds['gridlon_0'].values
-        lat_size = len(lat_grid) #1059
-        lon_size = len(lat_grid[0]) #1799
-        
-        lat_indexes, lon_indexes = [], []
-
-        #TODO: This can be made more efficient
-        # Potentially, can be a hashmap and stored in memory when object is initialized
-
-        #Finds indexes that are contained inside bounding box
-        for lat_index in range(lat_size):
-            for lon_index in range(lon_size):
-                p = Point(lon_grid[lat_index][lon_index],lat_grid[lat_index][lon_index])
-                if bounding_box.contains(p):
-                    lat_indexes.append(lat_index)
-                    lon_indexes.append(lon_index)
-        
-        #Gets min and max of lat/lon
-        min_lat_index, max_lat_index = min(lat_indexes), max(lat_indexes)
-        min_lon_index, max_lon_index = min(lon_indexes), max(lon_indexes)
-
-        #Returns filtered dataset
-        return ds.isel(ygrid_0=range(min_lat_index,max_lat_index), xgrid_0=range(min_lon_index,max_lon_index))
-
     #Creates the corresponding rrfs file name 
     #Follows the convention of the bucket
 
@@ -199,6 +165,40 @@ class Rrfs:
 
         ds = xr.Dataset(data_vars=data_vars, coords=coords)
         return ds 
+        #Filters the dataset to only contain grid points inside the bounding box
+
+    #Input:
+    # ds : xarray dataset
+    # bounding_box : shapely polygon object
+
+    #Output: 
+    # ds: xarray dataset 
+    def filter_spatially(self, ds, bounding_box):
+
+        lat_grid, lon_grid = ds['gridlat_0'].values, ds['gridlon_0'].values
+        lat_size = len(lat_grid) #1059
+        lon_size = len(lat_grid[0]) #1799
+        
+        lat_indexes, lon_indexes = [], []
+
+        #TODO: This can be made more efficient
+        # Potentially, can be a hashmap and stored in memory when object is initialized
+
+        #Finds indexes that are contained inside bounding box
+        for lat_index in range(lat_size):
+            for lon_index in range(lon_size):
+                p = Point(lon_grid[lat_index][lon_index],lat_grid[lat_index][lon_index])
+                if bounding_box.contains(p):
+                    lat_indexes.append(lat_index)
+                    lon_indexes.append(lon_index)
+        
+        #Gets min and max of lat/lon
+        min_lat_index, max_lat_index = min(lat_indexes), max(lat_indexes)
+        min_lon_index, max_lon_index = min(lon_indexes), max(lon_indexes)
+
+        #Returns filtered dataset
+        return ds.isel(ygrid_0=range(min_lat_index,max_lat_index), xgrid_0=range(min_lon_index,max_lon_index))
+    
     
     #Prototype function
     #The idea is to concat many model outputs along the time dimension
