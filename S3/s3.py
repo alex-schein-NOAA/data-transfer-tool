@@ -12,9 +12,10 @@ class s3:
     def download_file(self, object_name, download_path, cfile_name):
         try :
             with open(f"{download_path}/{cfile_name}", 'wb') as f:
-                print("Downloading File")
+                print(f"Downloading File {object_name} from {self.bucket_name}\n")
                 self.s3.download_fileobj(self.bucket_name, object_name, f)
-                print("Finished downloading")
+                print(f"Finished downloading {object_name}\n")
+                print(f"Stored as {cfile_name}\n")
 
         except Exception as e:
             raise Exception(f"File download Error: Failed to download file {object_name} from bucket {self.bucket_name}")

@@ -18,9 +18,6 @@ class Mrms:
         # init_hour_str = date_time.strftime("%H")      #S3 init hour
         date_time_str = date_time.strftime("%Y%m%d")  #S3 init_date 
         file_name = self.make_model_file_name(date_time_str=date_time_str,date_time=date_time)
-        # coso = file_name.split('.')
-        # file_name = f'{coso[0]}.{coso[1]}.{coso[2]}'
-        # print(file_name)
 
         #Checks cache for file
         if self.cache.check_cache(file_name, date_time_str,):

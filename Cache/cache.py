@@ -50,8 +50,7 @@ class cache:
         file = self.get_cfile_name(file_name, init_date_time_str, init_hour_str)
         download_path = self.get_download_path()
 
-        #TODO: Debug the unzipping
-        # Unzipped file cannot be loaded by xarray
+        #If zipped, unzips file, stores it in temporary folder and returns the xarray dataset
         if zipped:
             with open(f'{download_path}/{file}', 'rb') as cf:
                 compressed_file = cf.read()
