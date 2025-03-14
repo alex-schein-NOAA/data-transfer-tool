@@ -24,5 +24,6 @@ for bucket in s3.buckets.all():
     # IF IT DOESN'T, ONLY HAVE A FETCHER FUNC AND THEN LOOP OVER ALL DOWNLOADED FILES AFTERWARDS
         # Subset down to 2m temp and relevant spatial vars
         # Spatially restrict this to whatever domain (have as input arg)
+            # If doing CO, need to establish target region, if not the whole state (eastern CO not interesting...) but whatever domain, make sure to sample a bit outside of it to avoid edge fringing issue in actual domain of interest
         # Delete original file to save space (no point in caching, for what I'm doing)
         
