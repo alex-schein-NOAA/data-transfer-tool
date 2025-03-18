@@ -31,7 +31,7 @@ import cartopy.feature as cfeature
 
 #%%
 
-download_path = Path(r'C:\Users\alex.schein\Test code and files\Test files\Test HRRR files\Herbie_downloads')
+download_path = Path(r'C:\Users\alex.schein\Test code and files\Test files\Herbie_downloads')
 
 #%%
 
