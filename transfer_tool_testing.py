@@ -82,8 +82,6 @@ ds2 = H2.xarray(r':HGT:surface')
 subregion2 = ds2.where((ds2.latitude>=min_lat)&(ds2.latitude<=max_lat)&(ds2.longitude>=min_lon)&(ds2.longitude<=max_lon), drop=True)
 #subregion2.orog.plot(cmap=cm.jet)
 
-### xarray seems to have issues with drop=True, where it kills all the data (makes it nan) BUT inbuilt plot function works ok? makes me think it goes back up to the original object...
-
 #lvls = np.linspace(np.min(subregion2.orog.data), np.max(subregion2.orog.data), num=50)
 #plt.contourf(subregion2.longitude.data, subregion2.latitude.data, subregion2.orog.data, cmap=cm.jet, levels=lvls)
 
